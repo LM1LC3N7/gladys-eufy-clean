@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-16
+
 ### Added
 
 - eufy account (e-mail, password, country), through the eufy cloud of the
@@ -38,4 +40,5 @@ the notes of the version's GitHub Release.
 - "Test the connection" button with each robot's state and battery.
 - Feature names, suction levels and error messages in French or English.
 
-[Unreleased]: https://github.com/LM1LC3N7/gladys-eufy-clean/commits/main
+[Unreleased]: https://github.com/LM1LC3N7/gladys-eufy-clean/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/LM1LC3N7/gladys-eufy-clean/releases/tag/v0.1.1

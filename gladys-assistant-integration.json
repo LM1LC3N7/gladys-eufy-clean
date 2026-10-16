@@ -6,8 +6,8 @@
     "en": "eufy robot vacuums: state, battery, clean, pause, dock, suction, consumables, errors.",
     "fr": "Aspirateurs robots eufy : état, batterie, nettoyage, pause, base, aspiration, entretien."
   },
-  "version": "0.1.0",
-  "docker_image": "ghcr.io/lm1lc3n7/gladys-eufy-clean:0.1.0",
+  "version": "0.1.1",
+  "docker_image": "ghcr.io/lm1lc3n7/gladys-eufy-clean:0.1.1",
   "gladys_version": ">=5.2.0",
   "cover_image": "https://raw.githubusercontent.com/LM1LC3N7/gladys-eufy-clean/main/cover.png",
   "categories": ["appliances"],

@@ -1,6 +1,6 @@
 {
   "name": "gladys-eufy-clean",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Gladys Assistant external integration for eufy robot vacuums (RoboVac, eufy Clean), through the eufy cloud. Unofficial, not affiliated with Anker or eufy.",
   "type": "module",
