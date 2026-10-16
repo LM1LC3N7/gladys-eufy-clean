@@ -1,177 +1,255 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "eufy Clean",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "eufy robot vacuums: state, battery, clean, pause, dock, suction, consumables, errors.",
+    "fr": "Aspirateurs robots eufy : état, batterie, nettoyage, pause, base, aspiration, entretien."
   },
-  "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
-  "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "version": "0.1.0",
+  "docker_image": "ghcr.io/lm1lc3n7/gladys-eufy-clean:0.1.0",
+  "gladys_version": ">=5.2.0",
+  "cover_image": "https://raw.githubusercontent.com/LM1LC3N7/gladys-eufy-clean/main/cover.png",
+  "categories": ["appliances"],
+  "transports": ["cloud"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Your eufy account",
+        "fr": "Votre compte eufy"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Brings your eufy robot vacuums (RoboVac, eufy Clean X, L, G, C series) into Gladys through the eufy cloud, the one of the eufy app: state, battery, start, pause, return to dock, cleaning type and suction power, life of the brushes, filter and mop, errors, and scene triggers when a cleaning ends or an error appears. Updates arrive in real time over eufy's secure MQTT. Sign in with the account of the eufy app (or a second account the robot is shared with), then add the robots from the Discovery tab. Cameras, doorbells, locks and HomeBases are left to the eufy Security integration. Unofficial, not affiliated with Anker or eufy.",
+        "fr": "Amène vos aspirateurs robots eufy (RoboVac, eufy Clean séries X, L, G, C) dans Gladys par le cloud eufy, celui de l'application eufy : état, batterie, démarrage, pause, retour à la base, type de nettoyage et puissance d'aspiration, usure des brosses, du filtre et de la serpillière, erreurs, et des déclencheurs de scène quand un nettoyage se termine ou qu'une erreur survient. Mises à jour en temps réel par le MQTT sécurisé d'eufy. Connectez-vous avec le compte de l'application eufy (ou un second compte avec lequel le robot est partagé), puis ajoutez les robots depuis l'onglet Découverte. Caméras, sonnettes, serrures et HomeBase restent à l'intégration eufy Security. Non officiel, sans lien avec Anker ni eufy."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://github.com/LM1LC3N7/gladys-eufy-clean/blob/main/docs/fr.md",
+          "label": {
+            "en": "Guide (French)",
+            "fr": "Guide (français)"
+          }
+        },
+        {
+          "url": "https://github.com/LM1LC3N7/gladys-eufy-clean/blob/main/docs/en.md",
+          "label": {
+            "en": "Guide (English)",
+            "fr": "Guide (anglais)"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "email",
+      "type": "string",
+      "label": {
+        "en": "eufy e-mail address",
+        "fr": "Adresse e-mail eufy"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
+      "placeholder": {
+        "en": "gladys@example.com",
+        "fr": "gladys@exemple.fr"
+      },
+      "required": true
     },
     {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+      "key": "password",
+      "type": "secret",
+      "label": {
+        "en": "eufy password",
+        "fr": "Mot de passe eufy"
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
+      "required": true
     },
     {
-      "key": "unit",
+      "key": "country",
+      "type": "string",
+      "label": {
+        "en": "Country of the account",
+        "fr": "Pays du compte"
+      },
+      "description": {
+        "en": "Two letters, the country chosen when the eufy account was created: FR, BE, CH, GB, DE, US…",
+        "fr": "Deux lettres, le pays choisi à la création du compte eufy : FR, BE, CH, GB, DE, US…"
+      },
+      "placeholder": {
+        "en": "FR",
+        "fr": "FR"
+      },
+      "required": true,
+      "default": "FR"
+    },
+    {
+      "key": "sign_in",
+      "type": "section",
+      "label": {
+        "en": "If eufy asks for a code or a captcha",
+        "fr": "Si eufy demande un code ou un captcha"
+      },
+      "description": {
+        "en": "On the first sign-in, eufy usually sends a verification code (e-mail or app): type it below and save, it is used once and the field empties itself. After several failed sign-ins, eufy may ask for a captcha instead: its image is written in the integration logs as one line starting with data:image, to paste into the address bar of a browser; type its 4 characters below and save. The connection status says what eufy is waiting for.",
+        "fr": "À la première connexion, eufy envoie en général un code de vérification (e-mail ou application) : saisissez-le ci-dessous et enregistrez, il sert une fois et le champ se vide tout seul. Après plusieurs connexions ratées, eufy peut demander un captcha : son image est écrite dans les journaux de l'intégration, sur une ligne qui commence par data:image, à coller dans la barre d'adresse d'un navigateur ; saisissez ses 4 caractères ci-dessous et enregistrez. L'état de la connexion dit ce qu'eufy attend."
+      }
+    },
+    {
+      "key": "verification_code",
+      "type": "string",
+      "label": {
+        "en": "Verification code",
+        "fr": "Code de vérification"
+      },
+      "required": false,
+      "default": ""
+    },
+    {
+      "key": "captcha_answer",
+      "type": "string",
+      "label": {
+        "en": "Captcha answer",
+        "fr": "Réponse au captcha"
+      },
+      "required": false,
+      "default": ""
+    },
+    {
+      "key": "language",
       "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
-      "required": false,
-      "default": "celsius",
-      "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
-      ]
-    },
-    {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "label": {
+        "en": "Language of the feature names",
+        "fr": "Langue des noms des fonctionnalités"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "Used for the names of the features, the suction levels and the error messages.",
+        "fr": "Sert aux noms des fonctionnalités, des niveaux d'aspiration et aux messages d'erreur."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "fr",
+      "options": [
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français"
+          }
+        },
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion"
+      },
       "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "key": "cleaning_finished",
+      "label": {
+        "en": "Cleaning finished",
+        "fr": "Nettoyage terminé"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "A eufy robot vacuum is back on its dock (or stopped) after a cleaning, with the time and the area of the cleaning.",
+        "fr": "Un aspirateur robot eufy est revenu sur sa base (ou s'est arrêté) après un nettoyage, avec la durée et la surface du nettoyage."
       },
       "fields": [
         {
-          "key": "device",
+          "key": "robot",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
-          "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
-          ]
+          "label": {
+            "en": "Robot",
+            "fr": "Robot"
+          }
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "robot_name",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "Robot name",
+            "fr": "Nom du robot"
+          }
+        },
+        {
+          "key": "duration",
+          "type": "number",
+          "label": {
+            "en": "Cleaning time (min)",
+            "fr": "Durée du nettoyage (min)"
+          }
+        },
+        {
+          "key": "area",
+          "type": "number",
+          "label": {
+            "en": "Area cleaned (m²)",
+            "fr": "Surface nettoyée (m²)"
+          }
         }
       ]
-    }
-  ],
-  "scene_actions": [
+    },
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "robot_error",
+      "label": {
+        "en": "Robot error",
+        "fr": "Erreur du robot"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "A eufy robot vacuum reports a new error: wheel or brush stuck, dust bin full, water tank empty, robot trapped…",
+        "fr": "Un aspirateur robot eufy signale une nouvelle erreur : roue ou brosse bloquée, bac plein, réservoir vide, robot coincé…"
+      },
       "fields": [
         {
-          "key": "device",
+          "key": "robot",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
+          "label": {
+            "en": "Robot",
+            "fr": "Robot"
+          }
         }
       ],
-      "outputs": [
+      "variables": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "robot_name",
+          "type": "string",
+          "label": {
+            "en": "Robot name",
+            "fr": "Nom du robot"
+          }
+        },
+        {
+          "key": "error_code",
+          "type": "number",
+          "label": {
+            "en": "Error code",
+            "fr": "Code d'erreur"
+          }
+        },
+        {
+          "key": "error_message",
+          "type": "string",
+          "label": {
+            "en": "Error message",
+            "fr": "Message d'erreur"
+          }
         }
       ]
-    }
-  ],
-  "widgets": [
-    {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
-      },
-      "icon": "activity",
-      "action_timeout_seconds": 15
     }
   ]
 }

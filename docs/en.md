@@ -1,61 +1,154 @@
-# Demo Devices Template
+# eufy Clean
 
-This is the user documentation of the integration. Gladys re-hosts this file
-and shows a permanent **Documentation** link to it in the Configuration screen
-(in the user's language, with English as the fallback) — it is when
-configuring that the user needs it most. Keep the short onboarding hints in
-the `section` blocks of the manifest `config_schema`; put the long
-step-by-step (screenshots, troubleshooting…) here.
+This integration brings the **eufy robot vacuums** (RoboVac, eufy Clean: X,
+L, G, C series…) into Gladys, through the eufy cloud (the one of the eufy
+app): state, battery, cleaning, pause, return to dock, cleaning type, suction
+power, life of the brushes, filter and mop, errors, and scene triggers.
+Updates arrive in real time over eufy's secure MQTT. Unofficial, not
+affiliated with Anker or eufy.
+
+> **Development version (0.1).** Built on the community SDK
+> [@mega-yfue/eufy-sdk](https://github.com/mega-yfue/eufy-sdk) and tested with
+> simulated robots, not with a real robot yet. Feedback is welcome on the
+> GitHub repository.
+
+**Not covered here**: eufy cameras, video doorbells, locks, sensors and
+HomeBases. They belong to the **eufy Security** integration of the Gladys
+store (cicoub13/gladys-eufy); this one ignores them and never connects to
+them. eufy robot **mowers** are not supported yet.
+
+## Which account
+
+Use the e-mail address and password of your **eufy app** account, and the
+**country** chosen when it was created (FR, BE, CH, GB, DE, US…).
+
+- The integration signs in as its own "phone", different from the eufy app
+  and from the eufy Security integration, so none of them should sign the
+  others out. If the eufy app or Gladys keeps being signed out anyway, create
+  a **second eufy account**, share the robot with it from the eufy app
+  (robot → settings → share), and give Gladys that second account.
+- An account that signs in with Google or Apple has no password: add a
+  password in the eufy app, or use a second account.
+
+## Installation
+
+1. Install the integration from the Gladys store.
+2. In the **Configuration** tab, enter the e-mail address, the password and
+   the country of the eufy account. Save.
+3. On the first sign-in, eufy usually sends a **verification code** (by
+   e-mail or in the app): the status says so. Type the code in
+   **Verification code** and save. The field empties itself; the session is
+   then kept in the integration's `/data` folder, so a restart does not ask
+   for a new code.
+4. The status says "Connected to eufy: 1 robot".
+5. Open the **Discovery** tab and add your robots. Their values arrive as
+   soon as they are added and the robot reports (a docked robot may stay
+   silent until something changes).
+
+### The captcha, if eufy asks for one
+
+After several failed sign-ins, eufy may ask for a **captcha**. The Gladys
+configuration screen cannot show an image, so the integration writes it in
+its **logs**: a line that starts with `data:image/png;base64,`. Copy that whole
+line, paste it into the address bar of your browser to see the image, type its
+4 characters in **Captcha answer** and save. A wrong answer brings a new image
+in the logs.
+
+The **Test the connection** button shows the account, each robot with its
+state and battery, and whether the real-time channel is connected.
 
 ## What you get
 
-Six demo devices show up after installation: a weather station (real data
-from Open-Meteo), a switch, a dimmable light, a smart plug with power
-metering, a motion sensor and a camera.
+One Gladys device per robot vacuum, with the features the robot reports or
+the commands the SDK confirms for it:
 
-## Configuration
+| Feature                     | In Gladys                                                                                    |
+| --------------------------- | -------------------------------------------------------------------------------------------- |
+| State                       | Stopped, Running, Paused, Error, Returning to dock, Charging, Docked                         |
+| Cleaning (run mode)         | **Clean** starts a cleaning (or resumes a paused one), **Pause** pauses it                   |
+| Return to dock              | sends the robot back to its dock                                                             |
+| Cleaning type (clean mode)  | robots with a mop: **Auto** (vacuum and mop), **Vacuum**, **Mop**                            |
+| Suction power               | Quiet, Standard, Turbo, Max, and BoostIQ or Max Pro when the robot offers them               |
+| Battery, Charging           | battery level in %, charging on its dock                                                     |
+| Error, Error code           | the message ("Wheel stuck (2)", "No error") and the code, for scenes                         |
+| Consumables (maintenance)   | life remaining in % of the side brush, rolling brush, filter, mop, sensors and cleaning tray |
+| Area cleaned, Cleaning time | of the current or last cleaning (m², minutes)                                                |
+| Find my robot               | makes the robot beep                                                                         |
 
-1. Open the **Configuration** tab of the integration.
-2. Set the **latitude** and **longitude** the demo weather station should
-   observe (they default to Paris), and pick your temperature unit.
-   The **refresh interval** sets how often the weather station and the
-   plug's power are read: every 5 minutes by default, every minute at most.
-3. Save: the devices appear in the **Discovery** tab, ready to be added.
-
-The **Prefer the local connection** toggle drives the demo plug: it reports
-the channel it actually uses as a badge (local or cloud), with an orange dot
-when it runs degraded (local refused, cloud fallback).
-
-## Actions
-
-- **Test the weather provider** — performs a live request to Open-Meteo and
-  shows the current temperature and humidity under the button.
-- **Identify a device** — pick one of your devices in the list and it will
-  signal itself (the demo light "blinks" in the logs).
+- The features follow the robot: a robot without a mop has no cleaning type,
+  a part the robot does not count has no feature. A feature the robot reports
+  later is added; update the device from the **Discovery** tab to get it.
+- **Consumables**: the robot counts the hours each part has worked; the
+  integration turns them into a remaining life, with the lifetimes the Home
+  Assistant integration uses (side brush 180 h, rolling brush 360 h, filter
+  360 h, mop 180 h; sensors to clean every 60 h, cleaning tray every 30 h).
+  Resetting a counter after a replacement is done in the eufy app.
+- **There is no "stop"**: the SDK has not confirmed eufy's stop command yet.
+  **Pause** then **Return to dock** ends a cleaning.
+- The badge of each device shows `cloud`, or `unreachable` when eufy says the
+  robot is offline.
+- **Older robots** (G-series, L60, X8 and the other robots of the "eufy Home"
+  line): the SDK reads their state, battery and errors but has no confirmed
+  command for them yet; the test button marks them "read only".
 
 ## Scenes
 
-The integration adds its own cards to the scene editor (Gladys 5.1 or
-later), under the **Integrations** category:
+Two scene triggers, each can target one robot:
 
-- **Motion detected** (trigger) — starts the scene when a demo motion sensor
-  sees something move. Optionally pick the sensor and what moved (person,
-  animal); left empty, any detection matches. The following actions can
-  read what moved with `{{triggerEvent.data.target}}`.
-- **Identify a device** (action) — makes the chosen device signal itself.
-  It returns whether the device could signal itself, so the following
-  actions can depend on it.
+- **Cleaning finished**: the robot is back on its dock (or stopped) after a
+  cleaning. Variables `robot_name`, `duration` (minutes) and `area` (m²).
+  Not fired when the cleaning stopped on an error.
+- **Robot error**: the robot reports a new error (wheel or brush stuck, dust
+  bin full, water tank empty, robot trapped…). Variables `robot_name`,
+  `error_code` and `error_message`. Fired once per new code.
 
-## Dashboard
+The first reading after a start fires nothing. Commands are the usual "Control
+a device" actions (Cleaning: Clean / Pause, Return to dock, Suction power…),
+and the other values work with the "Device state changed" trigger.
 
-Add the **Demo status** widget to a dashboard: it shows the live
-temperature of the weather station and the power of the office plug, the
-connection the plug currently uses (orange when degraded) and the observed
-location. Its **Identify the light** button makes the demo light signal
-itself.
+## How it works
+
+The integration signs in to the eufy cloud like the app, reads the account's
+devices (every 10 minutes, to see a robot added or removed) and keeps one
+secure MQTT connection open: the robots report their changes on it, and the
+commands go through it. No polling of the robots. If the connection drops,
+it comes back by itself; if eufy ends the session, the integration signs in
+again after the delay eufy asks (one minute at least).
+
+## Options
+
+| Option                            | Default | Purpose                                                  |
+| --------------------------------- | ------- | -------------------------------------------------------- |
+| eufy e-mail address, password     | —       | the account of the eufy app (or a second account)        |
+| Country of the account            | FR      | two letters, the country the account was created in      |
+| Verification code, Captcha answer | empty   | only when eufy asks for them (see the status)            |
+| Language of the feature names     | French  | names of the features, suction levels and error messages |
 
 ## Troubleshooting
 
-The integration logs everything it does: check the integration logs from the
-Gladys UI (or `docker logs` on the host) with `LOG_LEVEL=debug` for the full
-detail.
+- **"eufy refused the sign-in"**: check the e-mail, the password and the
+  country in the eufy app. The integration does not retry by itself: it waits
+  for a change of the configuration.
+- **"eufy sent a verification code"**: type the code received by e-mail (or in
+  the app) in **Verification code** and save, within a few minutes.
+- **"eufy asks for a captcha"**: see above; the image is in the logs.
+- **"The eufy session ended"**: another app signed in with the same account
+  and identity, or the session expired. The integration signs in again by
+  itself; if it keeps happening, use a second account with the robot shared.
+- **"the eufy real-time channel (MQTT) did not open"**: the robots cannot
+  report. The integration tries again (1 minute, then longer); check that
+  Gladys reaches the Internet.
+- **A robot shows no state**: it reports on change only; start a cleaning or
+  put it on its dock, the state follows.
+- **A robot is "read only"**: an older model; its commands will come with the
+  SDK.
+
+## Privacy
+
+The e-mail and password are stored by Gladys as a secret (never sent back to
+the browser). The integration sends them, encrypted like the app does, to the
+eufy cloud of the account's region to open a session, and keeps the session in
+its `/data` folder. It does not register for camera notifications and opens no
+connection to cameras or HomeBases. eufy, Anker, RoboVac and BoostIQ are
+trademarks of their owner; this integration is not affiliated with Anker or
+eufy.

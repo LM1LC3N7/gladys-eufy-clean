@@ -12,44 +12,30 @@ the notes of the version's GitHub Release.
 
 ### Added
 
-- A working example of scene triggers, scene actions and dashboard widgets
-  (Gladys 5.1.0 or later).
-- `CHANGELOG.md`, rolled by the Release workflow.
-- A GitHub Release for every version, with its changelog section as notes: the
-  Gladys Supervision page links each version to the repository's releases.
-- CI runs the tests on Node 22 and 24, and builds the Docker image.
-- Dependabot keeps the npm dependencies and the GitHub Actions up to date.
-- `SECURITY.md` (how to report a vulnerability) and `CLAUDE.md` (project rules
-  for contributors and coding assistants).
-- Manifest tests: `version` matches `package.json`, `docker_image` is tagged
-  with it, descriptions hold 10 to 100 characters, placeholders are
-  multi-language objects.
-- The latitude and longitude fields show an example value as placeholder.
+- eufy account (e-mail, password, country), through the eufy cloud of the
+  eufy app: the verification code and the captcha answer eufy may ask for are
+  typed in the configuration (the captcha image is written in the logs), the
+  session is kept across restarts, and the integration signs in with its own
+  identity so it does not sign out the eufy app nor the eufy Security
+  integration. A refused sign-in waits for a configuration change; an
+  unreachable cloud is retried after 1, 2, 4… up to 15 minutes; a session
+  ended by eufy signs in again after the delay eufy asks.
+- One device per eufy robot vacuum: state (stopped, running, paused, error,
+  returning to dock, charging, docked), clean / pause (resumes a paused
+  cleaning), return to dock, cleaning type (vacuum, mop, both) on mop robots,
+  suction power (Quiet to Max Pro, as the robot offers), battery, charging,
+  error and error code, life remaining of the side brush, rolling brush,
+  filter, mop, sensors and cleaning tray, area and time of the last cleaning,
+  "Find my robot".
+- Real-time updates over eufy's secure MQTT, and an "unreachable" badge when
+  eufy reports a robot offline.
+- Scene triggers "Cleaning finished" (time and area) and "Robot error" (code
+  and message).
+- The older robots (G-series, L60, X8…) are read without commands, as the
+  eufy SDK does.
+- Cameras, doorbells, locks and HomeBases are ignored (eufy Security
+  integration).
+- "Test the connection" button with each robot's state and battery.
+- Feature names, suction levels and error messages in French or English.
 
-### Changed
-
-- Node.js 22 or later is required (Node 20 is end-of-life).
-- Integration SDK 0.15.0. The tests now run against the fake Gladys of the
-  SDK, which refuses the payloads Gladys refuses.
-- The refresh interval is one minute minimum, the fastest Gladys polls a
-  device. The plug's power is only sent when it changes, and every 30
-  minutes otherwise.
-
-### Fixed
-
-- Gladys refused the devices of the Discovery tab: the weather station and
-  the plug declared their poll frequency in seconds instead of one of the
-  values Gladys accepts, and were never polled. They now poll every minute,
-  and the readings follow the refresh interval of the configuration.
-
-- The release commit no longer fails `npm run format:check`: the Release
-  workflow updates the manifest `version` and `docker_image` in place instead
-  of re-printing the whole file with `jq`.
-- The integration can write to `/data`: the image creates the directory owned
-  by the `node` user, a new Docker volume was owned by root.
-- A sub-container running the integration's own image follows it to the new
-  tag at each release, as well as in the manifest of the build summary: it kept
-  the previous tag, which may not exist on the registry. Sub-containers on a
-  third-party image (a broker, a database...) keep theirs.
-
-[Unreleased]: https://github.com/GladysAssistant/integration-template-js/commits/main
+[Unreleased]: https://github.com/LM1LC3N7/gladys-eufy-clean/commits/main

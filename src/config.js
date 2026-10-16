@@ -1,45 +1,61 @@
 // -----------------------------------------------------------------------------
-// Integration configuration.
-//
-// The configuration is filled in by the user in Gladys, from the `config_schema`
-// declared in `gladys-assistant-integration.json`. The SDK fetches it for you
-// (`gladys.getConfig()`) and notifies you of every change through
-// `gladys.onConfigUpdated()`.
-//
-// This module only provides defaults and normalizes the received object, so the
-// rest of the code never has to deal with `undefined`.
+// The configuration of the manifest `config_schema`, normalized.
 // -----------------------------------------------------------------------------
 
-// Defaults: they MUST stay consistent with the `default` values declared in the
-// `config_schema` of the manifest.
-export const DEFAULT_CONFIG = {
-  latitude: 48.8566, // Paris
-  longitude: 2.3522,
-  unit: 'celsius', // 'celsius' | 'fahrenheit'
-  // Seconds between two reads of the polled sensors. Gladys polls at most once
-  // a minute: slower intervals are applied by skipping polls (see
-  // createPoller in src/devices/index.js).
-  poll_frequency: 300,
-  // Reserved key (NOT in config_schema): because the manifest declares both
-  // 'local' and 'cloud' in its `transports` field, Gladys shows a standard
-  // "Prefer the local connection" toggle and sends the user's choice here.
-  // Read-only for the integration; defaults to true.
-  GLADYS_PREFER_LOCAL: true,
+import { createHash } from 'node:crypto';
+
+/** Defaults, mirrored by the manifest (checked by test/manifest.test.js). */
+export const DEFAULTS = {
+  country: 'FR',
+  verification_code: '',
+  captcha_answer: '',
+  language: 'fr',
 };
 
+export const LANGUAGES = ['fr', 'en'];
+
+const hash = (text) => createHash('sha256').update(text).digest('hex');
+
+/** The account a session belongs to, without keeping the e-mail address itself. */
+export const accountKey = (email, country) =>
+  hash(`${country}:${email.trim().toLowerCase()}`).slice(0, 16);
+
 /**
- * Merge the user config with the defaults.
- * @param {Record<string, unknown>} raw config returned by the SDK
+ * The install identity sent to eufy (`openudid`, 16 hex characters like the
+ * SDK's own). The SDK derives one from the e-mail address alone, so two
+ * integrations using the same account (this one and eufy Security) would
+ * sign each other out: ours is derived from the e-mail address AND this
+ * integration's name, stable across restarts.
  */
+export const installId = (email) =>
+  createHash('md5')
+    .update(`gladys-eufy-clean:${email.trim().toLowerCase()}`)
+    .digest('hex')
+    .slice(0, 16);
+
 export function normalizeConfig(raw = {}) {
+  const email = String(raw?.email ?? '').trim();
+  const password = String(raw?.password ?? '');
+  const country = String(raw?.country ?? DEFAULTS.country)
+    .trim()
+    .toUpperCase();
+  const language = String(raw?.language ?? DEFAULTS.language)
+    .trim()
+    .toLowerCase();
+  const countryValid = /^[A-Z]{2}$/.test(country);
   return {
-    ...DEFAULT_CONFIG,
-    ...raw,
-    // Force the types: config may arrive as strings from a form.
-    latitude: Number(raw.latitude ?? DEFAULT_CONFIG.latitude),
-    longitude: Number(raw.longitude ?? DEFAULT_CONFIG.longitude),
-    poll_frequency: Number(raw.poll_frequency ?? DEFAULT_CONFIG.poll_frequency),
-    // The preference is a boolean; anything but an explicit false means true.
-    GLADYS_PREFER_LOCAL: raw.GLADYS_PREFER_LOCAL !== false,
+    email,
+    password,
+    country: countryValid ? country : DEFAULTS.country,
+    countryInvalid: !countryValid,
+    complete: email !== '' && password !== '',
+    account: email === '' ? '' : accountKey(email, country),
+    // What a change of must sign in again (the password itself is never kept).
+    credentials: hash(`${email.toLowerCase()}\n${password}\n${country}`),
+    installId: installId(email),
+    // Typed by the user when eufy asks for them; spaces are typing noise.
+    code: String(raw?.verification_code ?? '').replace(/\s+/g, ''),
+    captcha: String(raw?.captcha_answer ?? '').trim(),
+    language: LANGUAGES.includes(language) ? language : DEFAULTS.language,
   };
 }
