@@ -169,3 +169,7 @@ up to date at the end of every milestone.
       reworded from jeppesens/eufy-clean, MIT): the dedicated pass.
 - [ ] SDK migration 0.16.1 done in wave 14 (allow_start, reconnection
       configuration, live pause).
+
+## Next patch
+
+- Migration review minors: see `_lots/migration-reviews/w14-gladys-eufy-clean-r2.md`.
