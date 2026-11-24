@@ -41,6 +41,9 @@ Use the e-mail address and password of your **eufy app** account, and the
    then kept in the integration's `/data` folder, so a restart does not ask
    for a new code.
 4. The status says "Connected to eufy: 1 robot".
+   To start a cleaning from Gladys (a scene, a voice assistant), turn on
+   **Allow starting a cleaning** (off by default): **Pause** and **Return to
+   dock** work without it.
 5. Open the **Discovery** tab and add your robots. Their values arrive as
    soon as they are added and the robot reports (a docked robot may stay
    silent until something changes).
@@ -65,7 +68,7 @@ the commands the SDK confirms for it:
 | Feature                     | In Gladys                                                                                    |
 | --------------------------- | -------------------------------------------------------------------------------------------- |
 | State                       | Stopped, Running, Paused, Error, Returning to dock, Charging, Docked                         |
-| Cleaning (run mode)         | **Clean** starts a cleaning (or resumes a paused one), **Pause** pauses it                   |
+| Cleaning (run mode)         | **Clean** starts a cleaning (or resumes a paused one) once allowed, **Pause** pauses it      |
 | Return to dock              | sends the robot back to its dock                                                             |
 | Cleaning type (clean mode)  | robots with a mop: **Auto** (vacuum and mop), **Vacuum**, **Mop**                            |
 | Suction power               | Quiet, Standard, Turbo, Max, and BoostIQ or Max Pro when the robot offers them               |

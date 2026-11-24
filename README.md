@@ -54,8 +54,10 @@ Gladys ⇄ SDK ⇄ src/handlers.js ⇄ src/app.js (EufyCleanApp) ⇄ src/eufy.js
   `vacuum-cleaner` state / run-mode / clean-mode / dock like the core's
   Matter robot vacuums, `maintenance`/`life-remaining` consumables,
   `text`/`select` suction power.
-- **Commands**: the SDK's confirmed writes only (`startCleaning`,
-  `pauseCleaning`, `resumeCleaning`, `returnToDock`, `setCleanParam`,
+- **Commands**: the SDK's confirmed writes only (`startCleaning` and
+  `resumeCleaning` behind the "Allow starting a cleaning" option, off by
+  default; pause and the dock never blocked;
+  `pauseCleaning`, `returnToDock`, `setCleanParam`,
   `setSuctionLevel`, `locate`). The older (`eufy_home_tuya`) robots are read
   only, as in the SDK.
 - **Scene events**: `cleaning_finished` (a job back on the dock or stopped,

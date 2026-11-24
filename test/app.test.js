@@ -15,7 +15,13 @@ import { CAPTCHA, CAPTCHA_IMAGE, CODE, EMAIL, L60, PASSWORD, X10 } from './fixtu
 import { ApiError, ExpiredError, fakeEufy, memoryStore, settle } from './helpers/fakeEufy.js';
 
 const NOW = Date.UTC(2026, 9, 16, 8, 0, 0);
-const CONFIG = { email: EMAIL, password: PASSWORD, country: 'FR', language: 'en' };
+const CONFIG = {
+  email: EMAIL,
+  password: PASSWORD,
+  country: 'FR',
+  language: 'en',
+  allow_start: true,
+};
 const robot = (sn) => `ext:test-integration:robot:${sn}`;
 const { VACUUM_STATE: STATE, VACUUM_RUN_MODE: RUN, VACUUM_CLEAN_MODE: MODE } = GLADYS;
 
@@ -419,6 +425,40 @@ test('the commands go to the SDK writes, the robot answers over MQTT', async (t)
   ];
   assert.ok(refused.every((ack) => ack.success === false && /unsupported value/.test(ack.error)));
   assert.equal(calls.length, count, 'nothing sent for a value the robot does not offer');
+});
+
+test('without "Allow starting a cleaning", Clean is refused; Pause and the dock still go', async (t) => {
+  const { gladys, world, advance } = await setup(t, {
+    config: { ...CONFIG, allow_start: false },
+  });
+  await create(gladys, X10.sn);
+  const calls = world.devices.get(X10.sn).calls;
+  const count = calls.length;
+
+  const refused = await set(gladys, X10.sn, 'run-mode', RUN.CLEANING);
+  assert.equal(refused.success, false);
+  assert.match(refused.error, /Allow starting a cleaning/);
+  assert.equal(calls.length, count, 'nothing sent to the robot');
+
+  world.report(X10.sn, { activity: 'cleaning' });
+  await advance(3_000);
+  assert.equal((await set(gladys, X10.sn, 'run-mode', RUN.IDLE)).success, true);
+  assert.deepEqual(calls.at(-1), ['pauseCleaning'], 'a pause never needs the option');
+  world.report(X10.sn, { activity: 'paused' });
+  await advance(3_000);
+  const resume = await set(gladys, X10.sn, 'run-mode', RUN.CLEANING);
+  assert.equal(resume.success, false, 'a resume is a start');
+  assert.deepEqual(calls.at(-1), ['pauseCleaning'], 'nothing sent');
+  assert.equal((await set(gladys, X10.sn, 'dock', 1)).success, true);
+  assert.deepEqual(calls.at(-1), ['returnToDock'], 'the dock never needs the option');
+  assert.equal((await set(gladys, X10.sn, 'locate', 1)).success, true);
+  assert.deepEqual(calls.at(-1), ['locate', true]);
+
+  // Turned on from the configuration screen: the next Clean goes.
+  await gladys.fake.configUpdated({ ...CONFIG, allow_start: true });
+  await settle();
+  assert.equal((await set(gladys, X10.sn, 'run-mode', RUN.CLEANING)).success, true);
+  assert.deepEqual(calls.at(-1), ['resumeCleaning']);
 });
 
 test('"pause" on a robot already docked sends nothing', async (t) => {

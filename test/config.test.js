@@ -34,6 +34,16 @@ test('normalizeConfig: defaults, trimming, country and language', () => {
   assert.equal(normalizeConfig({ language: 'de' }).language, 'fr');
 });
 
+test('allow_start is off by default, on only for true or "true"', () => {
+  assert.equal(DEFAULTS.allow_start, false);
+  assert.equal(normalizeConfig(undefined).allowStart, false);
+  assert.equal(normalizeConfig({ allow_start: true }).allowStart, true);
+  assert.equal(normalizeConfig({ allow_start: 'true' }).allowStart, true);
+  for (const value of [1, 'yes', 'on', 'false', false, null, undefined]) {
+    assert.equal(normalizeConfig({ allow_start: value }).allowStart, false, String(value));
+  }
+});
+
 test('a password change is a credentials change, without keeping the password', () => {
   const a = normalizeConfig({ email: 'a@b.c', password: 'one' });
   const b = normalizeConfig({ email: 'a@b.c', password: 'two' });

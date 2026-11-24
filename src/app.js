@@ -631,6 +631,10 @@ export class EufyCleanApp {
       case 'run-mode': {
         const mode = Number(value);
         if (mode === RUN.CLEANING) {
+          // A physical start: refused unless allowed (pause and the dock never are).
+          if (!this.config.allowStart) {
+            throw new Error(COMMAND_ERRORS.startDisabled);
+          }
           if (reading.activity === 'paused' && reading.commands.resume) {
             return runCommand(device, 'vacuumClean', 'resumeCleaning');
           }

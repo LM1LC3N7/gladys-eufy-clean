@@ -7,6 +7,7 @@ import {
 } from '@gladysassistant/integration-sdk';
 import { createFakeGladys } from '@gladysassistant/integration-sdk/testing';
 import { GLADYS } from '../src/constants.js';
+import { assertCoreDevice } from './helpers/coreFeature.js';
 import {
   COMMAND_ROLES,
   FEATURES,
@@ -126,6 +127,18 @@ test('roles: only a mop robot gets the cleaning type, merged in display order', 
     'locate',
   ]);
   assert.deepEqual(ROLES.slice(0, 4), ['state', 'run-mode', 'clean-mode', 'dock']);
+});
+
+test('every feature has a numeric min and max and the other core fields, in both languages', () => {
+  const reading = readRobot(fakeDevice(X10, { ...X10_DOCKED }, { commands: AIOT_COMMANDS }));
+  const info = { sn: X10.sn, name: '', model: 'T2351' };
+  let features = 0;
+  for (const language of ['en', 'fr']) {
+    const device = buildDevice(gladys, info, ROLES, reading, language);
+    features += assertCoreDevice(device, language);
+    assert.equal(device.should_poll, false);
+  }
+  assert.equal(features, 2 * ROLES.length);
 });
 
 test('buildDevice: name, features, options', () => {

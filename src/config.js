@@ -10,6 +10,7 @@ export const DEFAULTS = {
   verification_code: '',
   captcha_answer: '',
   language: 'fr',
+  allow_start: false,
 };
 
 export const LANGUAGES = ['fr', 'en'];
@@ -57,5 +58,7 @@ export function normalizeConfig(raw = {}) {
     code: String(raw?.verification_code ?? '').replace(/\s+/g, ''),
     captcha: String(raw?.captcha_answer ?? '').trim(),
     language: LANGUAGES.includes(language) ? language : DEFAULTS.language,
+    // Starting (or resuming) a cleaning from Gladys: off until the user says so.
+    allowStart: raw?.allow_start === true || raw?.allow_start === 'true',
   };
 }

@@ -142,4 +142,6 @@ export const COMMAND_ERRORS = {
   unknownRobot: 'unknown robot',
   unsupported: 'this robot does not support this command through the eufy SDK',
   badValue: 'unsupported value',
+  startDisabled:
+    'starting a cleaning from Gladys is off: turn on "Allow starting a cleaning" in the configuration',
 };

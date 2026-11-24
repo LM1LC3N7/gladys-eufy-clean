@@ -10,6 +10,17 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+### Added
+
+- **Allow starting a cleaning** option, off by default: until it is on,
+  **Clean** (start or resume) is refused with a message; **Pause** and
+  **Return to dock** always work. Turn it on to start a cleaning from a scene
+  or a voice assistant.
+
+### Changed
+
+- Integration SDK 0.16.1 (no change for the devices).
+
 ## [0.1.1] - 2026-10-16
 
 ### Added

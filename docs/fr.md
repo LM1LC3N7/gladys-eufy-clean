@@ -43,6 +43,9 @@ DE, US…).
    Le champ se vide tout seul ; la session est ensuite gardée dans le dossier
    `/data` de l'intégration, un redémarrage ne redemande pas de code.
 4. L'état indique « Connecté à eufy : 1 robot ».
+   Pour lancer un nettoyage depuis Gladys (une scène, un assistant vocal),
+   activez **Autoriser le lancement d'un nettoyage** (désactivé par défaut) :
+   **Pause** et **Retour à la base** fonctionnent sans.
 5. Ouvrez l'onglet **Découverte** et ajoutez vos robots. Leurs valeurs
    arrivent dès l'ajout, quand le robot donne des nouvelles (un robot sur sa
    base peut rester silencieux tant que rien ne change).
@@ -68,7 +71,7 @@ signale ou les commandes que le SDK confirme pour lui :
 | Fonctionnalité                     | Dans Gladys                                                                                                                         |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | État                               | Arrêté, En cours, En pause, Erreur, Retour à la base, En charge, Sur la base                                                        |
-| Nettoyage (mode de fonctionnement) | **Nettoyer** lance un nettoyage (ou reprend celui en pause), **Pause** le met en pause                                              |
+| Nettoyage (mode de fonctionnement) | **Nettoyer** lance un nettoyage (ou reprend celui en pause) une fois autorisé, **Pause** le met en pause                            |
 | Retour à la base                   | renvoie le robot sur sa base                                                                                                        |
 | Type de nettoyage                  | robots avec serpillière : **Auto** (aspiration et serpillière), **Aspiration**, **Serpillière**                                     |
 | Puissance d'aspiration             | Silencieux, Standard, Turbo, Max, et BoostIQ ou Max Pro quand le robot les propose                                                  |

@@ -90,6 +90,8 @@ test('the configuration matches the code', () => {
   assert.equal(fields.password.type, 'secret', 'the password is never sent back to the browser');
   assert.equal(fields.email.required && fields.password.required, true);
   assert.equal(fields.verification_code.required, false);
+  assert.equal(fields.allow_start.type, 'boolean');
+  assert.equal(fields.allow_start.default, false, 'starting a cleaning is off by default');
   assert.equal(fields.captcha_answer.required, false);
   for (const key of ['intro', 'sign_in']) {
     const section = fields[key];

@@ -9,7 +9,7 @@ already taken and the next milestones.
 A Gladys Assistant **external integration** of type `device`: a Node.js
 service (Node 24.5+, ESM, no build step) in its own sandboxed Docker
 container, talking to Gladys through `@gladysassistant/integration-sdk`
-(v0.15) and to the eufy cloud through `@mega-yfue/eufy-sdk` (pinned, see
+(v0.16) and to the eufy cloud through `@mega-yfue/eufy-sdk` (pinned, see
 TODO.md). It signs in to a eufy account (verification code and captcha typed
 in the configuration), reads the account's robot vacuums, turns them into
 Gladys devices and states from their secure MQTT reports, sends the commands
@@ -21,7 +21,7 @@ Security integration. Unofficial, not affiliated with Anker or eufy.
 
 ```bash
 npm install
-npm test                                  # node --test, the built-in runner
+npm test                                  # node --test --test-timeout=60000
 node --test test/app.test.js              # one file
 npm run lint                              # ESLint
 npm run format:check                      # Prettier, as the CI runs it
@@ -59,11 +59,21 @@ test/eufy.test.js   the contract with the installed eufy SDK (no network)
 
 ## Rules
 
+- **Starting is sensitive**: `run-mode` = Cleaning (start or resume) is
+  refused unless `allow_start` (off by default). Pause, the dock, the
+  cleaning type, the suction and locate never need an option; a stop is
+  never blocked.
+- **Features follow the core model.** Every feature has a non-empty `name`, a
+  numeric `min` and `max` (0/0 for text), boolean `read_only` and
+  `has_feedback`: Gladys refuses it otherwise, and the SDK's fake Gladys
+  (0.16.1) too; `test/helpers/coreFeature.js` checks the device in both
+  languages. The device carries `should_poll: false` (Gladys 5.3 polls a
+  device with `poll_frequency` unless it says so).
 - **External ids are forever**: device = `robot:<serial>`, feature =
   `<device>:<role>` (roles in `src/devices.js` FEATURES). Never change how
   they are built.
 - Manifest keys (`email`, `password`, `country`, `verification_code`,
-  `captcha_answer`, `language`, `test_connection`, the two scene triggers,
+  `captcha_answer`, `allow_start`, `language`, `test_connection`, the two scene triggers,
   their fields and variables) and the suction option values (`quiet` …
   `max_pro`) are frozen: users store them in devices and scenes.
 - Value conventions: the eufy side is the SDK's typed getters (activity

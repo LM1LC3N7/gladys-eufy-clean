@@ -21,8 +21,8 @@
         "fr": "Votre compte eufy"
       },
       "description": {
-        "en": "Brings your eufy robot vacuums (RoboVac, eufy Clean X, L, G, C series) into Gladys through the eufy cloud, the one of the eufy app: state, battery, start, pause, return to dock, cleaning type and suction power, life of the brushes, filter and mop, errors, and scene triggers when a cleaning ends or an error appears. Updates arrive in real time over eufy's secure MQTT. Sign in with the account of the eufy app (or a second account the robot is shared with), then add the robots from the Discovery tab. Cameras, doorbells, locks and HomeBases are left to the eufy Security integration. Unofficial, not affiliated with Anker or eufy.",
-        "fr": "Amène vos aspirateurs robots eufy (RoboVac, eufy Clean séries X, L, G, C) dans Gladys par le cloud eufy, celui de l'application eufy : état, batterie, démarrage, pause, retour à la base, type de nettoyage et puissance d'aspiration, usure des brosses, du filtre et de la serpillière, erreurs, et des déclencheurs de scène quand un nettoyage se termine ou qu'une erreur survient. Mises à jour en temps réel par le MQTT sécurisé d'eufy. Connectez-vous avec le compte de l'application eufy (ou un second compte avec lequel le robot est partagé), puis ajoutez les robots depuis l'onglet Découverte. Caméras, sonnettes, serrures et HomeBase restent à l'intégration eufy Security. Non officiel, sans lien avec Anker ni eufy."
+        "en": "Brings your eufy robot vacuums (RoboVac, eufy Clean X, L, G, C series) into Gladys through the eufy cloud, the one of the eufy app: state, battery, start (once allowed in the configuration), pause, return to dock, cleaning type and suction power, life of the brushes, filter and mop, errors, and scene triggers when a cleaning ends or an error appears. Updates arrive in real time over eufy's secure MQTT. Sign in with the account of the eufy app (or a second account the robot is shared with), then add the robots from the Discovery tab. Cameras, doorbells, locks and HomeBases are left to the eufy Security integration. Unofficial, not affiliated with Anker or eufy.",
+        "fr": "Amène vos aspirateurs robots eufy (RoboVac, eufy Clean séries X, L, G, C) dans Gladys par le cloud eufy, celui de l'application eufy : état, batterie, démarrage (une fois autorisé dans la configuration), pause, retour à la base, type de nettoyage et puissance d'aspiration, usure des brosses, du filtre et de la serpillière, erreurs, et des déclencheurs de scène quand un nettoyage se termine ou qu'une erreur survient. Mises à jour en temps réel par le MQTT sécurisé d'eufy. Connectez-vous avec le compte de l'application eufy (ou un second compte avec lequel le robot est partagé), puis ajoutez les robots depuis l'onglet Découverte. Caméras, sonnettes, serrures et HomeBase restent à l'intégration eufy Security. Non officiel, sans lien avec Anker ni eufy."
       },
       "links": [
         {
@@ -112,6 +112,20 @@
       },
       "required": false,
       "default": ""
+    },
+    {
+      "key": "allow_start",
+      "type": "boolean",
+      "label": {
+        "en": "Allow starting a cleaning",
+        "fr": "Autoriser le lancement d'un nettoyage"
+      },
+      "description": {
+        "en": "Off by default. On: Clean in Gladys starts (or resumes) a cleaning. Pause and Return to dock always work.",
+        "fr": "Désactivé par défaut. Activé : Nettoyer dans Gladys lance (ou reprend) un nettoyage. Pause et Retour à la base fonctionnent toujours."
+      },
+      "required": false,
+      "default": false
     },
     {
       "key": "language",
