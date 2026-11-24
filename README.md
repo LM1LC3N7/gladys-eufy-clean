@@ -2,8 +2,8 @@
 
 [Gladys Assistant](https://gladysassistant.com) external integration for
 **eufy robot vacuums** (RoboVac, eufy Clean X, L, G, C series), through the
-eufy cloud (the one of the eufy app): state, battery and charging, clean /
-pause, return to dock, cleaning type, suction power, life remaining of the
+eufy cloud (the one of the eufy app): state, battery and charging, clean
+(once allowed in the configuration) / pause, return to dock, cleaning type, suction power, life remaining of the
 brushes, filter, mop, sensors and cleaning tray, error and error code, area
 and time of the last cleaning, "find my robot", and scene triggers when a
 cleaning ends or an error appears. Real time over eufy's secure MQTT.

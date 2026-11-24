@@ -114,8 +114,10 @@ Deux déclencheurs de scène, chacun peut viser un robot :
 
 La première lecture après un démarrage ne déclenche rien. Les commandes sont
 les actions habituelles « Contrôler un appareil » (Nettoyage : Nettoyer /
-Pause, Retour à la base, Puissance d'aspiration…), et les autres valeurs
-fonctionnent avec le déclencheur « Changement d'état d'un appareil ».
+Pause, Retour à la base, Puissance d'aspiration… ; Nettoyer demande
+**Autoriser le lancement d'un nettoyage** dans la configuration), et les
+autres valeurs fonctionnent avec le déclencheur « Changement d'état d'un
+appareil ».
 
 ## Fonctionnement
 

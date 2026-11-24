@@ -428,7 +428,7 @@ test('the commands go to the SDK writes, the robot answers over MQTT', async (t)
 });
 
 test('without "Allow starting a cleaning", Clean is refused; Pause and the dock still go', async (t) => {
-  const { gladys, world, advance } = await setup(t, {
+  const { gladys, world, advance, logger } = await setup(t, {
     config: { ...CONFIG, allow_start: false },
   });
   await create(gladys, X10.sn);
@@ -453,6 +453,11 @@ test('without "Allow starting a cleaning", Clean is refused; Pause and the dock 
   assert.deepEqual(calls.at(-1), ['returnToDock'], 'the dock never needs the option');
   assert.equal((await set(gladys, X10.sn, 'locate', 1)).success, true);
   assert.deepEqual(calls.at(-1), ['locate', true]);
+  assert.equal((await set(gladys, X10.sn, 'clean-mode', MODE.MOP)).success, true);
+  assert.deepEqual(calls.at(-1), ['setCleanParam', 'mop', 'normal', 'middle']);
+  assert.equal((await set(gladys, X10.sn, 'suction', 'max_pro')).success, true);
+  assert.deepEqual(calls.at(-1), ['setSuctionLevel', 5]);
+  assert.ok(logger.lines.some((l) => /warn run-mode = 1 refused .*Allow starting/.test(l)));
 
   // Turned on from the configuration screen: the next Clean goes.
   await gladys.fake.configUpdated({ ...CONFIG, allow_start: true });
@@ -461,12 +466,74 @@ test('without "Allow starting a cleaning", Clean is refused; Pause and the dock 
   assert.deepEqual(calls.at(-1), ['resumeCleaning']);
 });
 
-test('"pause" on a robot already docked sends nothing', async (t) => {
-  const { gladys, world } = await setup(t);
+test('the option saved during a WebSocket outage is taken at the reconnection', async (t) => {
+  const { gladys, world, app } = await setup(t);
+  await create(gladys, X10.sn);
+  const calls = world.devices.get(X10.sn).calls;
+  const logins = world.clients.length;
+
+  // Turned off while disconnected: Gladys queues no config-updated.
+  await gladys.disconnect();
+  gladys.fake.config = { ...CONFIG, allow_start: false };
+  await gladys.connect();
+  await settle();
+  const refused = await set(gladys, X10.sn, 'run-mode', RUN.CLEANING);
+  assert.equal(refused.success, false);
+  assert.match(refused.error, /Allow starting a cleaning/);
+  assert.deepEqual(calls, [], 'nothing sent');
+  assert.equal(world.clients.length, logins, 'no new sign-in for an option');
+  assert.equal(app.phase, 'connected');
+
+  // Turned on while disconnected.
+  await gladys.disconnect();
+  gladys.fake.config = { ...CONFIG, allow_start: true };
+  await gladys.connect();
+  await settle();
+  assert.equal((await set(gladys, X10.sn, 'run-mode', RUN.CLEANING)).success, true);
+  assert.deepEqual(calls.at(-1), ['startCleaning']);
+
+  // New credentials while disconnected: a new sign-in.
+  await gladys.disconnect();
+  gladys.fake.config = { ...CONFIG, password: 'another' };
+  await gladys.connect();
+  await settle();
+  assert.equal(world.clients.length, logins + 1, 'new credentials sign in again');
+});
+
+test('a reconnection alone never retries a refused password', async (t) => {
+  const factory = fakeEufy({ needsCode: false });
+  factory.world.failures.push(
+    new ApiError('/passport/login failed (200/26006): password error', 26006),
+  );
+  const { gladys, world, app } = await setup(t, { factory });
+  assert.equal(app.phase, 'refused');
+  await gladys.disconnect();
+  gladys.fake.config = { ...CONFIG, allow_start: false, language: 'fr' };
+  await gladys.connect();
+  await settle();
+  assert.equal(world.logins, 1, 'no new sign-in');
+  assert.equal(app.phase, 'refused');
+  assert.equal(app.config.language, 'fr', 'the other values are taken');
+});
+
+test('"pause" on a robot already docked sends nothing, and says so', async (t) => {
+  const { gladys, world, logger } = await setup(t);
   await create(gladys, X10.sn);
   const ack = await set(gladys, X10.sn, 'run-mode', RUN.IDLE);
   assert.equal(ack.success, true);
   assert.deepEqual(world.devices.get(X10.sn).calls, []);
+  assert.ok(logger.lines.some((l) => /nothing sent/.test(l)));
+  assert.ok(!logger.lines.some((l) => /run-mode = 0 sent/.test(l)));
+});
+
+test('"pause" decides on the live state: a fresh report, or no report yet', async (t) => {
+  const { gladys, world } = await setup(t);
+  await create(gladys, X10.sn);
+  const calls = world.devices.get(X10.sn).calls;
+  // Started from the eufy app: reported, then paused at once (no cached reading yet).
+  world.report(X10.sn, { activity: 'cleaning' });
+  assert.equal((await set(gladys, X10.sn, 'run-mode', RUN.IDLE)).success, true);
+  assert.deepEqual(calls.at(-1), ['pauseCleaning']);
 });
 
 test('a robot reporting more later gains its features, kept across restarts', async (t) => {

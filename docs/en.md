@@ -106,8 +106,9 @@ Two scene triggers, each can target one robot:
   `error_code` and `error_message`. Fired once per new code.
 
 The first reading after a start fires nothing. Commands are the usual "Control
-a device" actions (Cleaning: Clean / Pause, Return to dock, Suction power…),
-and the other values work with the "Device state changed" trigger.
+a device" actions (Cleaning: Clean / Pause, Return to dock, Suction power…;
+Clean needs **Allow starting a cleaning** in the configuration), and the other
+values work with the "Device state changed" trigger.
 
 ## How it works
 

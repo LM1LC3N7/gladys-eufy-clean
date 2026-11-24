@@ -10,16 +10,25 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
-### Added
-
-- **Allow starting a cleaning** option, off by default: until it is on,
-  **Clean** (start or resume) is refused with a message; **Pause** and
-  **Return to dock** always work. Turn it on to start a cleaning from a scene
-  or a voice assistant.
-
 ### Changed
 
+- **Clean** (start or resume a cleaning) now needs the new **Allow starting a
+  cleaning** option, off by default: until it is ticked in the configuration,
+  Clean is refused from Gladys and from the scenes, with a message naming the
+  option, and the refusal is logged. **Pause** and **Return to dock** always
+  work. Tick it to keep starting the robot from a scene or a voice assistant.
+- A configuration saved while the integration was disconnected from Gladys
+  (up to a minute after a restart of Gladys) is taken at the reconnection:
+  the start option and the language at once, new credentials with a new
+  sign-in. It was ignored until the next save or restart.
 - Integration SDK 0.16.1 (no change for the devices).
+
+### Fixed
+
+- **Pause** decides on the live state of the robot (the cached reading could
+  be two seconds old, or empty before the first report), is sent when the
+  state is unknown, and the log no longer says "sent" when the robot was not
+  cleaning.
 
 ## [0.1.1] - 2026-10-16
 

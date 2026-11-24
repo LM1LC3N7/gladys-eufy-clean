@@ -87,6 +87,23 @@ export class EufyCleanApp {
       return;
     }
     this.gladys.forgetPublishedStates?.();
+    // A configuration saved during the outage: Gladys queues no config-updated,
+    // the integration resynchronizes at every connection. New credentials or
+    // country: a restart (a new try is the user's). Anything else (the start
+    // option, the language) is taken as it is: a refused sign-in or a wait is
+    // never restarted by a reconnection alone.
+    const next = normalizeConfig(rawConfig);
+    const previous = this.config;
+    if (
+      next.credentials !== previous.credentials ||
+      next.countryInvalid !== previous.countryInvalid
+    ) {
+      await this.start(rawConfig);
+      return;
+    }
+    // A code or captcha answer typed during the outage is not sent here: the
+    // user types it again (the field is then spent, as usual).
+    this.config = { ...next, code: previous.code, captcha: previous.captcha };
     if (this.phase === 'connected') {
       await this.publishDevices();
       this.pushAllStates();
@@ -603,6 +620,9 @@ export class EufyCleanApp {
 
   // --- commands --------------------------------------------------------------
 
+  /** `command` found nothing to send (the robot is already in that state). */
+  static NOTHING_TO_SEND = 'nothing';
+
   async setValue(_device, feature, value) {
     const parsed = parseFeatureId(feature?.external_id);
     if (!parsed) {
@@ -615,9 +635,19 @@ export class EufyCleanApp {
     if (!robot) {
       throw new Error(COMMAND_ERRORS.unknownRobot);
     }
-    const ran = await this.command(robot, parsed.role, value);
+    let ran;
+    try {
+      ran = await this.command(robot, parsed.role, value);
+    } catch (err) {
+      this.logger.warn(`${parsed.role} = ${value} refused for ${robot.info.sn}: ${err.message}`);
+      throw err;
+    }
     if (!ran) {
       throw new Error(COMMAND_ERRORS.unsupported);
+    }
+    if (ran === EufyCleanApp.NOTHING_TO_SEND) {
+      this.logger.info(`${parsed.role} = ${value}: ${robot.info.sn} is not cleaning, nothing sent`);
+      return;
     }
     this.logger.info(`${parsed.role} = ${value} sent to ${robot.info.sn}`);
     // The robot answers over MQTT: read it again soon after.
@@ -626,7 +656,8 @@ export class EufyCleanApp {
 
   async command(robot, role, value) {
     const { device } = robot;
-    const reading = robot.reading ?? readRobot(device);
+    // The live state of the SDK (no request): the cached reading is up to 2 s old.
+    const reading = readRobot(device);
     switch (role) {
       case 'run-mode': {
         const mode = Number(value);
@@ -641,11 +672,12 @@ export class EufyCleanApp {
           return runCommand(device, 'vacuumClean', 'startCleaning');
         }
         if (mode === RUN.IDLE) {
-          // No confirmed "stop" in the SDK: pause, the dock ends the job.
-          if (['cleaning', 'returning'].includes(reading.activity)) {
+          // No confirmed "stop" in the SDK: pause, the dock ends the job. A
+          // protective command: sent too when the activity is unknown.
+          if ([undefined, 'cleaning', 'returning'].includes(reading.activity)) {
             return runCommand(device, 'vacuumClean', 'pauseCleaning');
           }
-          return true;
+          return EufyCleanApp.NOTHING_TO_SEND;
         }
         throw new Error(COMMAND_ERRORS.badValue);
       }

@@ -144,7 +144,28 @@ up to date at the end of every milestone.
 - **Real time, no polling**: robots only report over MQTT (their cloud record
   holds none of their state); the SDK's read-through cache is set to 10 min
   so reading the live getters every 60 s costs no request.
+- **Starting is sensitive, off by default** (SDK 0.16.1 migration, wave 14):
+  Clean (`startCleaning` / `resumeCleaning`) runs the robot in the home, and
+  a scene or a voice assistant can send it, so it needs `allow_start`
+  (boolean, off by default), read at the gate right before the SDK write.
+  Pause, Return to dock, the cleaning type, the suction and Locate never
+  need it (nothing starts a job). The option, the language and new
+  credentials saved during a WebSocket outage are taken at the reconnection
+  (Gladys queues no `config-updated`); a reconnection alone never restarts
+  a refused sign-in nor a wait.
 - **Events**: a job starts at cleaning/paused, ends at docked/idle; an error
   during the job cancels "finished" unless the robot resumes; a new non-zero
   code fires "robot error" (a warning such as "dust bin full" while cleaning
   too). Mid-job recharges are not told apart (see "To check").
+
+## Next patch
+
+- [ ] Saving the configuration with only `allow_start` or the language
+      changed while the sign-in is refused or waiting restarts it (the
+      refused password is sent again, the wait goes back to 1 min). Make the
+      restart of `configUpdated` depend on the credentials and the country
+      only, except in phase `idle` (review w14 r1, minor 6).
+- [ ] No `LICENSE` nor `THIRD_PARTY_NOTICES.md` (fault codes and lifetimes
+      reworded from jeppesens/eufy-clean, MIT): the dedicated pass.
+- [ ] SDK migration 0.16.1 done in wave 14 (allow_start, reconnection
+      configuration, live pause).
