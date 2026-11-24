@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-24
+
 ### Changed
 
 - **Clean** (start or resume a cleaning) now needs the new **Allow starting a
@@ -60,5 +62,6 @@ the notes of the version's GitHub Release.
 - "Test the connection" button with each robot's state and battery.
 - Feature names, suction levels and error messages in French or English.
 
-[Unreleased]: https://github.com/LM1LC3N7/gladys-eufy-clean/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/LM1LC3N7/gladys-eufy-clean/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/LM1LC3N7/gladys-eufy-clean/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/LM1LC3N7/gladys-eufy-clean/releases/tag/v0.1.1
